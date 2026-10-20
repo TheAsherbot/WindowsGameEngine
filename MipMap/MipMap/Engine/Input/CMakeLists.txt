@@ -1,4 +1,6 @@
-﻿# Enigne\ConsoleRenderer
+# Enigne\Input
+
+add_subdirectory(ConsoleInput)
 
 file(GLOB CORE_SRC CONFIGURE_DEPENDS *.cpp *.h)
 
