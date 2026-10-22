@@ -1,6 +1,4 @@
 ## Needs to be implimented
-Console HANDLEing
-
 Win32 Input detection
 
 Win32 Mouse Detection. 

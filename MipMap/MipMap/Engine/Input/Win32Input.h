@@ -1,77 +1,81 @@
 #pragma once
 
 #include <Windows.h>
+#include "Engine/Renderer/ConsoleRenderer/ConsoleRenderer.h"
 
 namespace Input
 {
-	enum KeyFlags : long long // 94 options 3 ints are 98 bits. Set to 
+	namespace InputFlags
 	{
-		A = 1 << 0,
-		B = 1 << 1,
-		C = 1 << 2,
-		D = 1 << 3,
-		E = 1 << 4,
-		F = 1 << 5,
-		G = 1 << 6,
-		H = 1 << 7,
-		I = 1 << 8,
-		J = 1 << 9,
-		K = 1 << 10,
-		L = 1 << 11,
-		M = 1 << 12,
-		N = 1 << 13,
-		O = 1 << 14,
-		P = 1 << 15,
-		Q = 1 << 16,
-		R = 1 << 17,
-		S = 1 << 18,
-		T = 1 << 19,
-		U = 1 << 20,
-		V = 1 << 21,
-		W = 1 << 22,
-		X = 1 << 23,
-		Y = 1 << 24,
-		Z = 1 << 25,
-		One = 1 << 26,
-		Two = 1 << 27,
-		Three = 1 << 28,
-		Four = 1 << 29,
-		Five = 1 << 30,
-		Six = 1 << 31,
-		Seven = (long long)1 << 32,
-		Eight = (long long)1 << 33,
-		Nine = (long long)1 << 34,
-		Zero = (long long)1 << 35,
-		Ctrl = (long long)1 << 36,
-		LCtrl = (long long)1 << 37,
-		RCtrl = (long long)1 << 38,
-		Shift = (long long)1 << 39,
-		LShift = (long long)1 << 40,
-		RShift = (long long)1 << 41,
-		Alt = (long long)1 << 42,
-		LAlt = (long long)1 << 43,
-		RAlt = (long long)1 << 44,
-		Esc = (long long)1 << 45,
-		Tab = (long long)1 << 46,
-		Enter = (long long)1 << 47,
-		UpArrow = (long long)1 << 48,
-		DownArrow = (long long)1 << 49,
-		LeftArrow = (long long)1 << 50,
-		RightArrow = (long long)1 << 51,
-		F1 = (long long)1 << 52,
-		F2 = (long long)1 << 53,
-		F3 = (long long)1 << 54,
-		F4 = (long long)1 << 55,
-		F5 = (long long)1 << 56,
-		F6 = (long long)1 << 57,
-		F7 = (long long)1 << 58,
-		F8 = (long long)1 << 59,
-		F9 = (long long)1 << 60,
-		F10 = (long long)1 << 61,
-		F11 = (long long)1 << 62,
-		F12 = (long long)1 << 63,
-	};
-	enum Key // 94 options 3 ints are 98 bits. Set to 
+		enum KeyFlags : long long // 64 options 2 ints are 64 bits. long long = 64 bits
+		{
+			A = 1 << 0,
+			B = 1 << 1,
+			C = 1 << 2,
+			D = 1 << 3,
+			E = 1 << 4,
+			F = 1 << 5,
+			G = 1 << 6,
+			H = 1 << 7,
+			I = 1 << 8,
+			J = 1 << 9,
+			K = 1 << 10,
+			L = 1 << 11,
+			M = 1 << 12,
+			N = 1 << 13,
+			O = 1 << 14,
+			P = 1 << 15,
+			Q = 1 << 16,
+			R = 1 << 17,
+			S = 1 << 18,
+			T = 1 << 19,
+			U = 1 << 20,
+			V = 1 << 21,
+			W = 1 << 22,
+			X = 1 << 23,
+			Y = 1 << 24,
+			Z = 1 << 25,
+			One = 1 << 26,
+			Two = 1 << 27,
+			Three = 1 << 28,
+			Four = 1 << 29,
+			Five = 1 << 30,
+			Six = 1 << 31,
+			Seven = (long long)1 << 32,
+			Eight = (long long)1 << 33,
+			Nine = (long long)1 << 34,
+			Zero = (long long)1 << 35,
+			Ctrl = (long long)1 << 36,
+			LCtrl = (long long)1 << 37,
+			RCtrl = (long long)1 << 38,
+			Shift = (long long)1 << 39,
+			LShift = (long long)1 << 40,
+			RShift = (long long)1 << 41,
+			Alt = (long long)1 << 42,
+			LAlt = (long long)1 << 43,
+			RAlt = (long long)1 << 44,
+			Esc = (long long)1 << 45,
+			Tab = (long long)1 << 46,
+			Enter = (long long)1 << 47,
+			UpArrow = (long long)1 << 48,
+			DownArrow = (long long)1 << 49,
+			LeftArrow = (long long)1 << 50,
+			RightArrow = (long long)1 << 51,
+			F1 = (long long)1 << 52,
+			F2 = (long long)1 << 53,
+			F3 = (long long)1 << 54,
+			F4 = (long long)1 << 55,
+			F5 = (long long)1 << 56,
+			F6 = (long long)1 << 57,
+			F7 = (long long)1 << 58,
+			F8 = (long long)1 << 59,
+			F9 = (long long)1 << 60,
+			F10 = (long long)1 << 61,
+			F11 = (long long)1 << 62,
+			F12 = (long long)1 << 63,
+		};
+	}
+	enum Key // 64 options
 	{
 		A,
 		B,
@@ -144,7 +148,8 @@ namespace Input
 		NotPressed,
 		Pressed,
 		Held,
-		Rleased,
+		Released,
+		NotRegistered
 	};
 
 	class InputManager
@@ -156,19 +161,22 @@ namespace Input
 
 		void Update();
 
-		void RegisterKeys(KeyFlags key);
+		void RegisterKeys(InputFlags::KeyFlags keys);
 		void RegisterKey(Key key);
-		KeyFlags GetRegisteredKeys() const;
+		void UnregisterKeys(InputFlags::KeyFlags keys);
+		void UnregisterKey(Key key);
+		InputFlags::KeyFlags GetRegisteredKeys() const;
+		bool IsKeyRegistered(Key key) const;
 
 		KeyState GetRegisteredKeyState(Key key) const;
 
 	private:
-		KeyFlags keysRegistered; // only registered keys will be checked for input to save time.
+		InputFlags::KeyFlags keysRegistered; // only registered keys will be checked for input to save time.
 
-		KeyFlags keysHeld; // Stores all the registered keys that are held. 1 is true 0 false. Iis not held first fram that is pressed
-		KeyFlags keysPressed; // Stores all the registered keys that are pressed this frame. 1 is true, 0 false.
-		KeyFlags keysReleased; // Stores all the registered keys that were held last frame is are not anymore.
+		InputFlags::KeyFlags keysHeld; // Stores all the registered keys that are held. 1 is true 0 false. Iis not held first fram that is pressed
+		InputFlags::KeyFlags keysPressed; // Stores all the registered keys that are pressed this frame. 1 is true, 0 false.
+		InputFlags::KeyFlags keysReleased; // Stores all the registered keys that were held last frame is are not anymore.
 
-		void ReadKeyValue(int virutalKey, char keyEnumOffset);
+		void ReadKeyValue(int virutalKey, short keyEnumOffset);
 	};
 }

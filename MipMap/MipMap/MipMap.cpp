@@ -18,6 +18,8 @@ int main()
 	renderer = new Renderer::ConsoleRenderer((short)20, (short)8, (short)16, (short)18, &Start, &Update, &consoleInputHandle);
 	inputManager = new Input::InputManager();
 
+	inputManager->RegisterKey(Input::A);
+
 	renderer->Start();
 
 	delete renderer;
@@ -33,9 +35,10 @@ void Start()
 
 void Update(float deltaTime)
 {
-	if (inputManager->IsKeyPressed())
+	inputManager->Update();
+
+	if (inputManager->GetRegisteredKeyState(Input::A) == Input::Released)
 	{
-		renderer->DrawString(4, 3, "New Project");
-		renderer->DrawString(3, 4, "Structure! :D");
+		renderer->DrawString(4, 1, "A Pressed");
 	}
 }
