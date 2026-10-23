@@ -1,25 +1,99 @@
 #include "Win32Input.h"
 #include <string> 
 
-
-
 #define KEY_PRESSED 0x8000 
 
 namespace Input
 {
-	InputManager::InputManager()
+	InputManager::InputManager(const HWND* windowHandle)
+		: windowHandle(windowHandle)
 	{
 		keysRegistered = (InputFlags::KeyFlags)0;
 		keysHeld = (InputFlags::KeyFlags)0;
 		keysPressed = (InputFlags::KeyFlags)0;
 		keysReleased = (InputFlags::KeyFlags)0;
+		SetCursorPos(5, 5);
+
+		// mouseTracker = (MouseTracker)(MouseTracker::WindowSelected | MouseTracker::OverWindows);
 	}
+
 	InputManager::~InputManager()
 	{
 	}
 	
 
 	void InputManager::Update()
+	{
+		UpdateRegisteredKeys();
+		UpdateMouse();
+	}
+
+	void InputManager::RegisterKeys(InputFlags::KeyFlags keys)
+	{
+		keysRegistered = (InputFlags::KeyFlags)(keysRegistered | keys);
+	}
+
+	void InputManager::RegisterKey(Key key)
+	{
+		keysRegistered = (InputFlags::KeyFlags)(keysRegistered | (InputFlags::KeyFlags)(1 << (int)key));
+	}
+
+	void InputManager::UnregisterKeys(InputFlags::KeyFlags keys)
+	{
+		keysRegistered = (InputFlags::KeyFlags)(keysRegistered & ~keys);
+	}
+
+	void InputManager::UnregisterKey(Key key)
+	{
+		keysRegistered = (InputFlags::KeyFlags)(keysRegistered & ~(InputFlags::KeyFlags)(1 << (int)key));
+	}
+
+	InputFlags::KeyFlags InputManager::GetRegisteredKeys() const
+	{
+		return keysRegistered;
+	}
+
+	bool InputManager::IsKeyRegistered(Key key) const
+	{
+		return keysRegistered & (InputFlags::KeyFlags)(1 << (int)key);
+	}
+
+	KeyState InputManager::GetRegisteredKeyState(Key key) const
+	{
+		if (!(keysRegistered & (InputFlags::KeyFlags)(1 << (int)key)))
+			return NotRegistered;
+
+		if (keysHeld & (InputFlags::KeyFlags)(1 << (int)key))
+			return Held;
+		if (keysPressed & (InputFlags::KeyFlags)(1 << (int)key))
+			return Pressed;
+		if (keysReleased& (InputFlags::KeyFlags)(1 << (int)key))
+			return Released;
+
+		return NotPressed;
+	}
+
+	KeyState InputManager::GetMouseButtonState(MouseButton mouseButton) const
+	{
+		return KeyState();
+	}
+
+	void InputManager::SetMouseTracker(MouseTracker mouseTracker)
+	{
+		this->mouseTracker = mouseTracker;
+	}
+
+	const POINT* InputManager::GetMousePositionPointer() const
+	{
+		return &mousePosition;
+	}
+
+	const POINT* InputManager::GetMousePositionDeltaPointer() const
+	{
+		return &mouseDelta;
+	}
+
+	void InputManager::UpdateRegisteredKeys()
 	{
 		for (short currentKeyIndex = 0; currentKeyIndex < 64; currentKeyIndex++)
 		{
@@ -232,52 +306,102 @@ namespace Input
 		}
 	}
 
-	void InputManager::RegisterKeys(InputFlags::KeyFlags keys)
+	void InputManager::UpdateMouse()
 	{
-		keysRegistered = (InputFlags::KeyFlags)(keysRegistered | keys);
-	}
+		if (mouseTracker & MouseTracker::WindowSelected)
+		{
+			if (GetForegroundWindow() != *windowHandle)
+			{
+				mouseDelta.x = 0;
+				mouseDelta.y = 0;
+				return;
+			}
+		}
 
-	void InputManager::RegisterKey(Key key)
-	{
-		keysRegistered = (InputFlags::KeyFlags)(keysRegistered | (InputFlags::KeyFlags)(1 << (int)key));
-	}
+		WINDOWPLACEMENT windowPlacement;
+		POINT windowPosition;
+		POINT& lastCursorPosition = mouseDelta;
+		lastCursorPosition = mousePosition;
 
-	void InputManager::UnregisterKeys(InputFlags::KeyFlags keys)
-	{
-		keysRegistered = (InputFlags::KeyFlags)(keysRegistered & ~keys);
-	}
+		GetWindowPlacement(*windowHandle, &windowPlacement);
+		windowPosition.x = windowPlacement.rcNormalPosition.left;
+		windowPosition.y = windowPlacement.rcNormalPosition.top;
+		GetCursorPos(&mousePosition);
 
-	void InputManager::UnregisterKey(Key key)
-	{
-		keysRegistered = (InputFlags::KeyFlags)(keysRegistered & ~(InputFlags::KeyFlags)(1 << (int)key));
-	}
 
-	InputFlags::KeyFlags InputManager::GetRegisteredKeys() const
-	{
-		return keysRegistered;
-	}
+		if (mouseTracker & MouseTracker::OverWindows)
+		{
+			// Limit if not over window.
+			if (!(mousePosition.x >= windowPlacement.rcNormalPosition.left && mousePosition.x <= windowPlacement.rcNormalPosition.right && mousePosition.y >= windowPlacement.rcNormalPosition.bottom && mousePosition.y <= (windowPlacement.rcNormalPosition.top - 32)))
+			{
+				mousePosition = lastCursorPosition;
+				mouseDelta.x = 0;
+				mouseDelta.y = 0;
+				return;
+			}
+		}
+		
 
-	bool InputManager::IsKeyRegistered(Key key) const
-	{
-		return keysRegistered & (InputFlags::KeyFlags)(1 << (int)key);
-	}
+		mousePosition.x -= windowPosition.x + 8;
+		mousePosition.y -= (windowPosition.y + 32); // account for the title bar thingy
 
-	KeyState InputManager::GetRegisteredKeyState(Key key) const
-	{
-		if (!(keysRegistered & (InputFlags::KeyFlags)(1 << (int)key)))
-			return NotRegistered;
+		mouseDelta.x = mousePosition.x - lastCursorPosition.x;
+		mouseDelta.y = mousePosition.y - lastCursorPosition.y;
 
-		if (keysHeld & (InputFlags::KeyFlags)(1 << (int)key))
-			return Held;
-		if (keysPressed & (InputFlags::KeyFlags)(1 << (int)key))
-			return Pressed;
-		if (keysReleased& (InputFlags::KeyFlags)(1 << (int)key))
-			return Released;
 
-		return NotPressed;
+		// Read Mouse Buttons
 	}
 
 	void InputManager::ReadKeyValue(int virtualKey, short keyEnumOffset)
+	{
+		short currentKeyGetKeyState = GetKeyState(virtualKey);
+
+		if (currentKeyGetKeyState & 0x8000)
+		{
+			if (keysPressed & (1 << keyEnumOffset))
+			{
+				// Needs to be held
+				keysHeld = (InputFlags::KeyFlags)(keysHeld | (1 << keyEnumOffset));
+
+				// No longer first frame pressing
+				keysPressed = (InputFlags::KeyFlags)(keysPressed & ~(1 << keyEnumOffset));
+			}
+			else if (keysHeld & (1 << keyEnumOffset))
+			{
+				// It is being held. Nothing to do here
+			}
+			else
+			{
+				// Just pressed this frane
+				keysPressed = (InputFlags::KeyFlags)(keysPressed | (1 << keyEnumOffset));
+			}
+		}
+		else
+		{
+			if (keysHeld & (1 << keyEnumOffset))
+			{
+				// It was released
+				keysHeld = (InputFlags::KeyFlags)(keysHeld & ~(1 << keyEnumOffset));
+
+				keysReleased = (InputFlags::KeyFlags)(keysReleased | (1 << keyEnumOffset));
+			}
+			else if (keysPressed & (1 << keyEnumOffset))
+			{
+				// It was tapped for 1 frame. Therfore it was release
+				keysPressed = (InputFlags::KeyFlags)(keysPressed & ~(1 << keyEnumOffset));
+
+				keysReleased = (InputFlags::KeyFlags)(keysReleased | (1 << keyEnumOffset));
+			}
+			else if (keysReleased & (1 << keyEnumOffset))
+			{
+				// it weas released last frame
+				keysReleased = (InputFlags::KeyFlags)(keysReleased & ~(1 << keyEnumOffset));
+			}
+		}
+	}
+
+	// TO;DO! MAKE USE MOUSE BUTTON STUFF!
+	void InputManager::ReadMouseValue(int virtualKey, short keyEnumOffset)
 	{
 		short currentKeyGetKeyState = GetKeyState(virtualKey);
 

@@ -74,6 +74,23 @@ namespace Input
 			F11 = (long long)1 << 62,
 			F12 = (long long)1 << 63,
 		};
+
+		/// <summary>
+		/// Every key uses 2 bits.
+		/// 00 - Not pressed
+		/// 01 - Held
+		/// 11 - Pressed
+		/// 10 - Released
+		/// </summary>
+		enum MouseButtonFlags : unsigned short
+		{
+			// These actually use the same keybaord detection stuff.
+			Left = 1,
+			Middle = 4,
+			Right = 16,
+			Side1 = 64,
+			Side2 = 256,
+		};
 	}
 	enum Key // 64 options
 	{
@@ -143,7 +160,7 @@ namespace Input
 		F12,
 	};
 
-	enum KeyState
+	enum KeyState : unsigned short
 	{
 		NotPressed,
 		Pressed,
@@ -152,11 +169,28 @@ namespace Input
 		NotRegistered
 	};
 
+	enum MouseButton : unsigned short
+	{
+		Left,
+		Middle,
+		Right,
+		Side1,
+		Side2,
+	};
+
+	// Set Both to true to have it only track mouse when the window is the selected window, and it is over the current window.
+	enum MouseTracker : short
+	{
+		WindowSelected = 1,
+		OverWindows = 2,
+	};
+
+
 	class InputManager
 	{
 	public:
 
-		InputManager();
+		InputManager(const HWND* windowHandle);
 		~InputManager();
 
 		void Update();
@@ -170,13 +204,32 @@ namespace Input
 
 		KeyState GetRegisteredKeyState(Key key) const;
 
+		KeyState GetMouseButtonState(MouseButton mouseButton) const;
+		void SetMouseTracker(MouseTracker mouseTracker);
+		const POINT* GetMousePositionPointer() const;
+		const POINT* GetMousePositionDeltaPointer() const;
+
+
+
 	private:
+		const HWND* windowHandle;
+
 		InputFlags::KeyFlags keysRegistered; // only registered keys will be checked for input to save time.
 
 		InputFlags::KeyFlags keysHeld; // Stores all the registered keys that are held. 1 is true 0 false. Iis not held first fram that is pressed
 		InputFlags::KeyFlags keysPressed; // Stores all the registered keys that are pressed this frame. 1 is true, 0 false.
 		InputFlags::KeyFlags keysReleased; // Stores all the registered keys that were held last frame is are not anymore.
 
+		MouseTracker mouseTracker;
+		InputFlags::MouseButtonFlags mouseButtons;
+		POINT mousePosition;
+		POINT mouseDelta;
+
+		void UpdateRegisteredKeys();
+		void UpdateMouse();
+
+
 		void ReadKeyValue(int virutalKey, short keyEnumOffset);
+		void ReadMouseValue(int virutalKey, short keyEnumOffset);
 	};
 }

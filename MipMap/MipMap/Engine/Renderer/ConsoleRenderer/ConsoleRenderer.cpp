@@ -3,7 +3,8 @@
 
 namespace Renderer
 {
-    ConsoleRenderer::ConsoleRenderer(short rows, short columns, short xFontSize, short yFontSize, void(*Start)(), void(*Update)(float deltaTime), HANDLE* consolInputHandle) :
+
+    ConsoleRenderer::ConsoleRenderer(short rows, short columns, short xFontSize, short yFontSize, void(*Start)(), void(*Update)(float deltaTime), HANDLE* consolInputHandle, std::string consoleName) :
         width(rows), height(columns), fontWidth(xFontSize), fontHeight(yFontSize), OnStart(Start), OnUpdate(Update), consoleHandle(CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL))
     {
         screenBuffer = new wchar_t[width * height];
@@ -37,6 +38,10 @@ namespace Renderer
         SetConsoleWindowInfo(consoleHandle, TRUE, &windowRect);
 
         SetConsoleMode(consolInputHandle, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
+
+        SetConsoleTitle(consoleName.c_str());
+        Sleep(50);
+        windowHandle = FindWindow(NULL, consoleName.c_str());
     }
 
     ConsoleRenderer::~ConsoleRenderer()
@@ -55,11 +60,6 @@ namespace Renderer
 
             SMALL_RECT windowRect = { 0, 0, (short)(width - 1), (short)(height - 1) };
             SetConsoleWindowInfo(consoleHandle, TRUE, &windowRect);
-
-
-
-
-
 
 
             OnUpdate(0);
@@ -141,6 +141,12 @@ namespace Renderer
 
     void ConsoleRenderer::HideCurser(bool hidden)
     {
-        ShowCursor(!hidden);
+        
     }
+
+    const HWND* ConsoleRenderer::GetWindowHandlePointer() const
+    {
+        return &windowHandle;
+    }
+    
 }

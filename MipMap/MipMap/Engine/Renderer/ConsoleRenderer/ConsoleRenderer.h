@@ -2,13 +2,14 @@
 
 #include <iostream>
 #include <Windows.h>
+#include <string>
 
 namespace Renderer
 {
 	class ConsoleRenderer
 	{
 	public:
-		ConsoleRenderer(short rows, short columns, short xFontSize, short yFontSize, void(*Start)(), void(*Update)(float deltaTime), HANDLE* consolInputHandle);
+		ConsoleRenderer(short rows, short columns, short xFontSize, short yFontSize, void(*Start)(), void(*Update)(float deltaTime), HANDLE* consolInputHandle, std::string consoleName = "CMD Renderer");
 		~ConsoleRenderer();
 
 		void Start();
@@ -24,7 +25,11 @@ namespace Renderer
 
 
 		void HideCurser(bool hidden);
+
+		const HWND* GetWindowHandlePointer() const;
+
 	private:
+		HWND windowHandle;
 
 		short width;
 		short height;
