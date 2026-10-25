@@ -3,13 +3,14 @@
 #include <iostream>
 #include <Windows.h>
 #include <string>
+#include <functional>
 
 namespace Renderer
 {
 	class ConsoleRenderer
 	{
 	public:
-		ConsoleRenderer(short rows, short columns, short xFontSize, short yFontSize, void(*Start)(), void(*Update)(float deltaTime), HANDLE* consolInputHandle, std::string consoleName = "CMD Renderer");
+		ConsoleRenderer(short rows, short columns, short xFontSize, short yFontSize, std::function<void()> Start, std::function<void(float)> Update, std::string consoleName = "CMD Renderer");
 		~ConsoleRenderer();
 
 		void Start();
@@ -43,8 +44,8 @@ namespace Renderer
 		HANDLE consoleHandle;
 
 
-		void(*OnStart)();
-		void(*OnUpdate)(float deltaTime);
+		std::function<void()> OnStart;
+		std::function<void(float)> OnUpdate;
 
 	};
 }

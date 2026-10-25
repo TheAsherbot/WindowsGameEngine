@@ -7,6 +7,7 @@ target_include_directories(MipMap PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Enter subdirectories
 add_subdirectory(Engine)
+add_subdirectory(Games)
 
 set_property(TARGET MipMap PROPERTY CXX_STANDARD 20)
 

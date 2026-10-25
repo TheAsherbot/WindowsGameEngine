@@ -3,13 +3,13 @@
 
 namespace Renderer
 {
-
-    ConsoleRenderer::ConsoleRenderer(short rows, short columns, short xFontSize, short yFontSize, void(*Start)(), void(*Update)(float deltaTime), HANDLE* consolInputHandle, std::string consoleName) :
+    HANDLE consolInputHandle;
+    ConsoleRenderer::ConsoleRenderer(short rows, short columns, short xFontSize, short yFontSize, std::function<void()> Start, std::function<void(float)> Update, std::string consoleName) :
         width(rows), height(columns), fontWidth(xFontSize), fontHeight(yFontSize), OnStart(Start), OnUpdate(Update), consoleHandle(CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL))
     {
         screenBuffer = new wchar_t[width * height];
         SetConsoleActiveScreenBuffer(consoleHandle);
-        *consolInputHandle = GetStdHandle(STD_INPUT_HANDLE);
+        consolInputHandle = GetStdHandle(STD_INPUT_HANDLE);
 
         for (int i = 0; i < width * height; i++)
         {

@@ -1,5 +1,6 @@
 #include "Win32Input.h"
 #include <string> 
+#include <bitset>
 
 #define KEY_PRESSED 0x8000 
 
@@ -13,6 +14,14 @@ namespace Input
 		keysPressed = (InputFlags::KeyFlags)0;
 		keysReleased = (InputFlags::KeyFlags)0;
 		SetCursorPos(5, 5);
+
+		mouseDelta.x = 0;
+		mouseDelta.y = 0;
+
+		mousePosition.x = 0;
+		mousePosition.y = 0;
+
+		mouseButtons = (Input::InputFlags::MouseButtonFlags)0;
 
 		// mouseTracker = (MouseTracker)(MouseTracker::WindowSelected | MouseTracker::OverWindows);
 	}
@@ -75,7 +84,19 @@ namespace Input
 
 	KeyState InputManager::GetMouseButtonState(MouseButton mouseButton) const
 	{
-		return KeyState();
+		if (mouseButtons & (1 << (mouseButton * 2)))
+		{
+			if (mouseButtons & (1 << ((mouseButton * 2) + 1)))
+			{
+				return Pressed;
+			}
+			return Held;
+		}
+		else if (mouseButtons & (1 << ((mouseButton * 2) + 1)))
+		{
+			return Released;
+		}
+		return NotPressed;
 	}
 
 	void InputManager::SetMouseTracker(MouseTracker mouseTracker)
@@ -332,7 +353,7 @@ namespace Input
 		if (mouseTracker & MouseTracker::OverWindows)
 		{
 			// Limit if not over window.
-			if (!(mousePosition.x >= windowPlacement.rcNormalPosition.left && mousePosition.x <= windowPlacement.rcNormalPosition.right && mousePosition.y >= windowPlacement.rcNormalPosition.bottom && mousePosition.y <= (windowPlacement.rcNormalPosition.top - 32)))
+			if (!(mousePosition.x >= windowPlacement.rcNormalPosition.left + 8 && mousePosition.x <= windowPlacement.rcNormalPosition.right - 8 && mousePosition.y <= windowPlacement.rcNormalPosition.bottom - 8 && mousePosition.y >= windowPlacement.rcNormalPosition.top + 32))
 			{
 				mousePosition = lastCursorPosition;
 				mouseDelta.x = 0;
@@ -350,11 +371,16 @@ namespace Input
 
 
 		// Read Mouse Buttons
+		ReadMouseValue(VK_LBUTTON, 0);
+		ReadMouseValue(VK_MBUTTON, 1);
+		ReadMouseValue(VK_RBUTTON, 2);
+		ReadMouseValue(VK_XBUTTON1, 3);
+		ReadMouseValue(VK_XBUTTON2, 4);
 	}
 
 	void InputManager::ReadKeyValue(int virtualKey, short keyEnumOffset)
 	{
-		short currentKeyGetKeyState = GetKeyState(virtualKey);
+		short currentKeyGetKeyState = GetAsyncKeyState(virtualKey);
 
 		if (currentKeyGetKeyState & 0x8000)
 		{
@@ -400,51 +426,39 @@ namespace Input
 		}
 	}
 
-	// TO;DO! MAKE USE MOUSE BUTTON STUFF!
 	void InputManager::ReadMouseValue(int virtualKey, short keyEnumOffset)
 	{
-		short currentKeyGetKeyState = GetKeyState(virtualKey);
+		short currentKeyGetKeyState = GetAsyncKeyState(virtualKey);
 
 		if (currentKeyGetKeyState & 0x8000)
 		{
-			if (keysPressed & (1 << keyEnumOffset))
+			if (mouseButtons & (1 << (keyEnumOffset * 2)) && mouseButtons & (1 << ((keyEnumOffset * 2) + 1))) // is pressed
 			{
-				// Needs to be held
-				keysHeld = (InputFlags::KeyFlags)(keysHeld | (1 << keyEnumOffset));
-
 				// No longer first frame pressing
-				keysPressed = (InputFlags::KeyFlags)(keysPressed & ~(1 << keyEnumOffset));
+				mouseButtons = (InputFlags::MouseButtonFlags)(mouseButtons & ~(1 << (keyEnumOffset * 2 + 1)));
 			}
-			else if (keysHeld & (1 << keyEnumOffset))
+			else if (mouseButtons & (1 << (keyEnumOffset * 2)))
 			{
 				// It is being held. Nothing to do here
 			}
 			else
 			{
 				// Just pressed this frane
-				keysPressed = (InputFlags::KeyFlags)(keysPressed | (1 << keyEnumOffset));
+				mouseButtons = (InputFlags::MouseButtonFlags)(mouseButtons | (1 << (keyEnumOffset * 2 + 1)) | (1 << (keyEnumOffset * 2)));
 			}
+			return;
 		}
 		else
 		{
-			if (keysHeld & (1 << keyEnumOffset))
+			if (mouseButtons & (1 << (keyEnumOffset * 2)))
 			{
-				// It was released
-				keysHeld = (InputFlags::KeyFlags)(keysHeld & ~(1 << keyEnumOffset));
-
-				keysReleased = (InputFlags::KeyFlags)(keysReleased | (1 << keyEnumOffset));
+				// It was released. Removed pressed. Add released.
+				mouseButtons = (InputFlags::MouseButtonFlags)(mouseButtons & ~(1 << (keyEnumOffset * 2)) | (1 << (keyEnumOffset * 2 + 1)));
 			}
-			else if (keysPressed & (1 << keyEnumOffset))
-			{
-				// It was tapped for 1 frame. Therfore it was release
-				keysPressed = (InputFlags::KeyFlags)(keysPressed & ~(1 << keyEnumOffset));
-
-				keysReleased = (InputFlags::KeyFlags)(keysReleased | (1 << keyEnumOffset));
-			}
-			else if (keysReleased & (1 << keyEnumOffset))
+			else if (mouseButtons & (1 << (keyEnumOffset * 2 + 1)))
 			{
 				// it weas released last frame
-				keysReleased = (InputFlags::KeyFlags)(keysReleased & ~(1 << keyEnumOffset));
+				mouseButtons = (InputFlags::MouseButtonFlags)(mouseButtons & ~(1 << (keyEnumOffset * 2 + 1)));
 			}
 		}
 	}
