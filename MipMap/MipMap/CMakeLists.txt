@@ -15,4 +15,5 @@ target_link_libraries(MipMap PRIVATE
     d3d12
     dxgi
     D3DCompiler
+    windowscodecs
 )
