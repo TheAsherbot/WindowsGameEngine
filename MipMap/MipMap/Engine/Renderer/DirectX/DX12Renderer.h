@@ -24,6 +24,7 @@ namespace Renderer
         {
         }
 
+
         Color(float r, float g, float b, float a = 1.0f)
             : r(r), g(g), b(b), a(a)
         {
@@ -101,10 +102,12 @@ namespace Renderer
 
         std::function<void()> OnStart;
         std::function<void(float)> OnUpdate;
-
+    
         // DX12 Pipeline Objects
-        D3D12_VIEWPORT viewport;
-        D3D12_RECT scissorRect;
+     
+       D3D12_VIEWPORT viewport;
+       
+       D3D12_RECT scissorRect;
         Microsoft::WRL::ComPtr<ID3D12Device> device;
         Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
         Microsoft::WRL::ComPtr<IDXGISwapChain3> swapChain;

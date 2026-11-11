@@ -889,8 +889,10 @@ namespace Renderer
     }
 
     void DX12Renderer::DrawLine(const int startXPosition, const int startYPosition, const int endXPosition, const int endYPosition, Color color)
+  
+        
+       int dx = std::abs(endXPosition - startXPosition);
     {
-        int dx = std::abs(endXPosition - startXPosition);
         int dy = std::abs(endYPosition - startYPosition);
         if (dx >= dy)
         {
@@ -927,8 +929,9 @@ namespace Renderer
 
         int charIndex = character - 32;
         int col = charIndex % 16;
-        int row = charIndex / 16;
+        int row = charIndex / 16
 
+      
         float u0 = (col * 8.0f) / 128.0f;
         float v0 = (row * 8.0f) / 64.0f;
         float u1 = ((col + 1) * 8.0f) / 128.0f;
@@ -967,7 +970,9 @@ namespace Renderer
             }
 
             DrawCharacter(currentX, currentY, ch, color, scale);
-            currentX += charWidth;
+
+
+           currentX += charWidth;
         }
     }
 
@@ -1001,13 +1006,15 @@ namespace Renderer
 
         float u0 = static_cast<float>(sourceX) / static_cast<float>(texture->width);
         float v0 = static_cast<float>(sourceY) / static_cast<float>(texture->height);
-        float u1 = static_cast<float>(sourceX + sourceWidth) / static_cast<float>(texture->width);
+        flot u1 = static_cast<float>(sourceX + sourceWidth) / static_cast<float>(texture->width);
         float v1 = static_cast<float>(sourceY + sourceHeight) / static_cast<float>(texture->height);
 
         DirectX::XMFLOAT4 c(tintColor.r, tintColor.g, tintColor.b, tintColor.a);
 
-        batchedVertices.push_back({ DirectX::XMFLOAT2(x1, y1), c, DirectX::XMFLOAT2(u0, v0) });
-        batchedVertices.push_back({ DirectX::XMFLOAT2(x2, y1), c, DirectX::XMFLOAT2(u1, v0) });
+        batched
+            
+           Vertices.push_back({ DirectX::XMFLOAT2(x1, y1), c, DirectX::XMFLOAT2(u0, v0) });
+        btchedVertices.push_back({ DirectX::XMFLOAT2(x2, y1), c, DirectX::XMFLOAT2(u1, v0) });
         batchedVertices.push_back({ DirectX::XMFLOAT2(x1, y2), c, DirectX::XMFLOAT2(u0, v1) });
 
         batchedVertices.push_back({ DirectX::XMFLOAT2(x1, y2), c, DirectX::XMFLOAT2(u0, v1) });
@@ -1044,4 +1051,5 @@ namespace Renderer
             return DefWindowProcA(hWnd, message, wParam, lParam);
         }
     }
+
 }

@@ -17,7 +17,7 @@ void Start()
     inputManager->RegisterKey(Input::Esc);
 
     // Optional: Load texture from file (PNG, JPG, BMP)
-    // myTexture = renderer->LoadTexture("Assets/player.png");
+     myTexture = renderer->LoadTexture("Assets/player.");
 }
 
 void Update(float deltaTime)
@@ -28,17 +28,20 @@ void Update(float deltaTime)
     renderer->Clear(Renderer::Color(0.08f, 0.08f, 0.12f, 1.0f));
 
     // 2. Render Text with 8x8 font
-    renderer->DrawString(20, 20, "2D DirectX 12 Engine Running!", Renderer::Color::White, 2.0f);
+    renderer->DrawString(20, 20, "FINALLY!!! 2D DirectX 12! <3", Renderer::Color::White, 2.0f);
     renderer->DrawString(20, 50, "DeltaTime: " + std::to_string(deltaTime), Renderer::Color::Yellow);
 
     // 3. Render Primitives
     renderer->DrawFilledRectangle(20, 90, 200, 150, Renderer::Color::Blue);
     renderer->DrawRectangle(20, 90, 200, 150, Renderer::Color::White);
+    z
 
-    // 4. Render Texture (if loaded)
+    // 4
+    // . Render Texture (if loaded)
     if (myTexture)
     {
-        renderer->DrawTexture(250, 90, myTexture);
+     
+        //renderer->DrawTexture(250, 90, myTexture);
     }
 
     // 5. Mouse Interaction directly through Win32Input
@@ -53,6 +56,8 @@ void Update(float deltaTime)
         renderer->DrawString(20, 200, "Left Mouse Pressed!", Renderer::Color::Green);
     }
 }
+
+
 
 int main()
 {
@@ -74,6 +79,9 @@ int main()
     catch (const std::exception& error)
     {
         std::cerr << "Fatal error: " << error.what() << '\n';
+
         return 1;
+ 
     }
-}
+
+
