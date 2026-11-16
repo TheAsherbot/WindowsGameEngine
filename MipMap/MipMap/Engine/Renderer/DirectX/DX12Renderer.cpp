@@ -7,6 +7,7 @@
 #include <cmath>
 #include <algorithm>
 
+
 #pragma comment(lib, "windowscodecs.lib")
 
 namespace Renderer
@@ -497,7 +498,6 @@ namespace Renderer
                 }
             }
         }
-
         fontTexture.reset(CreateTexture(atlasWidth, atlasHeight, fontPixels.data()));
         currentlyBoundTexture = whiteTexture.get();
     }
@@ -647,6 +647,7 @@ namespace Renderer
         }
 
         std::wstring wideFilePath(filePath.begin(), filePath.end());
+
 
         Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
         hr = wicFactory->CreateDecoderFromFilename(wideFilePath.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
@@ -889,10 +890,8 @@ namespace Renderer
     }
 
     void DX12Renderer::DrawLine(const int startXPosition, const int startYPosition, const int endXPosition, const int endYPosition, Color color)
-  
-        
-       int dx = std::abs(endXPosition - startXPosition);
     {
+        int dx = std::abs(endXPosition - startXPosition);
         int dy = std::abs(endYPosition - startYPosition);
         if (dx >= dy)
         {
@@ -929,7 +928,7 @@ namespace Renderer
 
         int charIndex = character - 32;
         int col = charIndex % 16;
-        int row = charIndex / 16
+        int row = charIndex / 16;
 
       
         float u0 = (col * 8.0f) / 128.0f;
@@ -1006,15 +1005,15 @@ namespace Renderer
 
         float u0 = static_cast<float>(sourceX) / static_cast<float>(texture->width);
         float v0 = static_cast<float>(sourceY) / static_cast<float>(texture->height);
-        flot u1 = static_cast<float>(sourceX + sourceWidth) / static_cast<float>(texture->width);
+        float u1 = static_cast<float>(sourceX + sourceWidth) / static_cast<float>(texture->width);
         float v1 = static_cast<float>(sourceY + sourceHeight) / static_cast<float>(texture->height);
 
         DirectX::XMFLOAT4 c(tintColor.r, tintColor.g, tintColor.b, tintColor.a);
 
-        batched
+        
             
-           Vertices.push_back({ DirectX::XMFLOAT2(x1, y1), c, DirectX::XMFLOAT2(u0, v0) });
-        btchedVertices.push_back({ DirectX::XMFLOAT2(x2, y1), c, DirectX::XMFLOAT2(u1, v0) });
+        batchedVertices.push_back({ DirectX::XMFLOAT2(x1, y1), c, DirectX::XMFLOAT2(u0, v0) });
+        batchedVertices.push_back({ DirectX::XMFLOAT2(x2, y1), c, DirectX::XMFLOAT2(u1, v0) });
         batchedVertices.push_back({ DirectX::XMFLOAT2(x1, y2), c, DirectX::XMFLOAT2(u0, v1) });
 
         batchedVertices.push_back({ DirectX::XMFLOAT2(x1, y2), c, DirectX::XMFLOAT2(u0, v1) });
@@ -1042,7 +1041,7 @@ namespace Renderer
         switch (message)
         {
         case WM_CLOSE:
-            DestroyWindow(hWnd);
+            PostQuitMessage(0);
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);

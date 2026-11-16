@@ -17,7 +17,7 @@ void Start()
     inputManager->RegisterKey(Input::Esc);
 
     // Optional: Load texture from file (PNG, JPG, BMP)
-     myTexture = renderer->LoadTexture("Assets/player.");
+    myTexture = renderer->LoadTexture("Assets/player.png");
 }
 
 void Update(float deltaTime)
@@ -34,14 +34,13 @@ void Update(float deltaTime)
     // 3. Render Primitives
     renderer->DrawFilledRectangle(20, 90, 200, 150, Renderer::Color::Blue);
     renderer->DrawRectangle(20, 90, 200, 150, Renderer::Color::White);
-    z
+    
 
     // 4
     // . Render Texture (if loaded)
     if (myTexture)
     {
-     
-        //renderer->DrawTexture(250, 90, myTexture);
+        renderer->DrawTexture(250, 90, myTexture);
     }
 
     // 5. Mouse Interaction directly through Win32Input
@@ -61,6 +60,7 @@ void Update(float deltaTime)
 
 int main()
 {
+
     try
     {
         // 1. Create DX12Renderer
@@ -81,7 +81,7 @@ int main()
         std::cerr << "Fatal error: " << error.what() << '\n';
 
         return 1;
- 
-    }
 
+    }
+}
 
