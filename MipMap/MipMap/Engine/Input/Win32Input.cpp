@@ -44,7 +44,7 @@ namespace Input
 
 	void InputManager::RegisterKey(Key key)
 	{
-		keysRegistered = (InputFlags::KeyFlags)(keysRegistered | (InputFlags::KeyFlags)(1 << (int)key));
+		keysRegistered = (InputFlags::KeyFlags)(keysRegistered | (InputFlags::KeyFlags)((long long)1 << (int)key));
 	}
 
 	void InputManager::UnregisterKeys(InputFlags::KeyFlags keys)
@@ -54,7 +54,7 @@ namespace Input
 
 	void InputManager::UnregisterKey(Key key)
 	{
-		keysRegistered = (InputFlags::KeyFlags)(keysRegistered & ~(InputFlags::KeyFlags)(1 << (int)key));
+		keysRegistered = (InputFlags::KeyFlags)(keysRegistered & ~(InputFlags::KeyFlags)((long long)1 << (int)key));
 	}
 
 	InputFlags::KeyFlags InputManager::GetRegisteredKeys() const
@@ -64,19 +64,19 @@ namespace Input
 
 	bool InputManager::IsKeyRegistered(Key key) const
 	{
-		return keysRegistered & (InputFlags::KeyFlags)(1 << (int)key);
+		return keysRegistered & (InputFlags::KeyFlags)((long long)1 << (int)key);
 	}
 
 	KeyState InputManager::GetRegisteredKeyState(Key key) const
 	{
-		if (!(keysRegistered & (InputFlags::KeyFlags)(1 << (int)key)))
+		if (!(keysRegistered & (InputFlags::KeyFlags)((long long)1 << (int)key)))
 			return NotRegistered;
 
-		if (keysHeld & (InputFlags::KeyFlags)(1 << (int)key))
+		if (keysHeld & (InputFlags::KeyFlags)((long long)1 << (int)key))
 			return Held;
-		if (keysPressed & (InputFlags::KeyFlags)(1 << (int)key))
+		if (keysPressed & (InputFlags::KeyFlags)((long long)1 << (int)key))
 			return Pressed;
-		if (keysReleased& (InputFlags::KeyFlags)(1 << (int)key))
+		if (keysReleased& (InputFlags::KeyFlags)((long long)1 << (int)key))
 			return Released;
 
 		return NotPressed;
@@ -317,8 +317,8 @@ namespace Input
 			case F11:
 				ReadKeyValue(VK_F11, currentKeyIndex);
 				break;
-			case F12:
-				ReadKeyValue(VK_F12, currentKeyIndex);
+			case Space:
+				ReadKeyValue(VK_SPACE, currentKeyIndex);
 				break;
 			default:
 				// ERROR! Out of range!
@@ -381,47 +381,48 @@ namespace Input
 	void InputManager::ReadKeyValue(int virtualKey, short keyEnumOffset)
 	{
 		short currentKeyGetKeyState = GetAsyncKeyState(virtualKey);
+		const long long bitMask = (long long)1 << keyEnumOffset;
 
 		if (currentKeyGetKeyState & 0x8000)
 		{
-			if (keysPressed & (1 << keyEnumOffset))
+			if (keysPressed & bitMask)
 			{
 				// Needs to be held
-				keysHeld = (InputFlags::KeyFlags)(keysHeld | (1 << keyEnumOffset));
+				keysHeld = (InputFlags::KeyFlags)(keysHeld | bitMask);
 
 				// No longer first frame pressing
-				keysPressed = (InputFlags::KeyFlags)(keysPressed & ~(1 << keyEnumOffset));
+				keysPressed = (InputFlags::KeyFlags)(keysPressed & ~bitMask);
 			}
-			else if (keysHeld & (1 << keyEnumOffset))
+			else if (keysHeld & bitMask)
 			{
 				// It is being held. Nothing to do here
 			}
 			else
 			{
 				// Just pressed this frane
-				keysPressed = (InputFlags::KeyFlags)(keysPressed | (1 << keyEnumOffset));
+				keysPressed = (InputFlags::KeyFlags)(keysPressed | bitMask);
 			}
 		}
 		else
 		{
-			if (keysHeld & (1 << keyEnumOffset))
+			if (keysHeld & bitMask)
 			{
 				// It was released
-				keysHeld = (InputFlags::KeyFlags)(keysHeld & ~(1 << keyEnumOffset));
+				keysHeld = (InputFlags::KeyFlags)(keysHeld & ~bitMask);
 
-				keysReleased = (InputFlags::KeyFlags)(keysReleased | (1 << keyEnumOffset));
+				keysReleased = (InputFlags::KeyFlags)(keysReleased | bitMask);
 			}
-			else if (keysPressed & (1 << keyEnumOffset))
+			else if (keysPressed & bitMask)
 			{
 				// It was tapped for 1 frame. Therfore it was release
-				keysPressed = (InputFlags::KeyFlags)(keysPressed & ~(1 << keyEnumOffset));
+				keysPressed = (InputFlags::KeyFlags)(keysPressed & ~bitMask);
 
-				keysReleased = (InputFlags::KeyFlags)(keysReleased | (1 << keyEnumOffset));
+				keysReleased = (InputFlags::KeyFlags)(keysReleased | bitMask);
 			}
-			else if (keysReleased & (1 << keyEnumOffset))
+			else if (keysReleased & bitMask)
 			{
 				// it weas released last frame
-				keysReleased = (InputFlags::KeyFlags)(keysReleased & ~(1 << keyEnumOffset));
+				keysReleased = (InputFlags::KeyFlags)(keysReleased & ~bitMask);
 			}
 		}
 	}

@@ -72,7 +72,7 @@ namespace Input
 			F9 = (long long)1 << 60,
 			F10 = (long long)1 << 61,
 			F11 = (long long)1 << 62,
-			F12 = (long long)1 << 63,
+			Space = (long long)1 << 63,
 		};
 
 		/// <summary>
@@ -157,7 +157,7 @@ namespace Input
 		F9,
 		F10,
 		F11,
-		F12,
+		Space,
 	};
 
 	enum KeyState : unsigned short

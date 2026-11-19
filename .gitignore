@@ -1,2 +1,6 @@
 out/
+build/
+build_vs/
+.build/
+.build_vs/
 .vs/

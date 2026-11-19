@@ -2,145 +2,128 @@
 
 namespace Games
 {
-	static CollisionSystem* CollisionSystem::GetCollisionSystem()
+	CollisionSystem* CollisionSystem::instance = nullptr;
+
+	CollisionSystem* CollisionSystem::GetCollisionSystem()
 	{
 		if (instance == nullptr)
 		{
 			instance = new CollisionSystem();
 		}
-
 		return instance;
 	}
 
-	const bool CollisionSystem::AddCollider(Collider& collider)
+	CollisionSystem::CollisionSystem()
+		: layerMask(0xFFFF)
 	{
-		if (collider.id == 0)
+		for (int i = 0; i < 256; i++)
 		{
-			for (uint8_t i = 1; i < 256; i++)
-			{
-				if (colliders[i].id == 0)
-				{
-					colliders[i] = collider;
-					colliders[i].id = i;
-					return true;
-				}
-			}
+			slotUsed[i] = false;
+			colliders[i].id = static_cast<uint8_t>(i);
+			colliders[i].active = false;
 		}
-		else
+	}
+
+	bool CollisionSystem::AddCollider(const Collider& collider, uint8_t& outIndex)
+	{
+		for (int i = 1; i < 256; i++)
 		{
-			if (colliders[collider.id].id = 0)
+			if (!slotUsed[i])
 			{
+				slotUsed[i] = true;
 				colliders[i] = collider;
+				colliders[i].id = static_cast<uint8_t>(i);
+				colliders[i].active = true;
+				outIndex = static_cast<uint8_t>(i);
 				return true;
 			}
 		}
-		
 		return false;
 	}
-	const bool CollisionSystem::RemoveCollider(Collider collider)
+
+	bool CollisionSystem::RemoveCollider(uint8_t index)
 	{
-		RemoveCollider(collider.id)
-	}
-	const bool CollisionSystem::RemoveCollider(uint8_t& index)
-	{
-		if (index == 0)
+		if (index == 0 || !slotUsed[index])
 		{
 			return false;
 		}
-
-		colliders[index] = colliders[0];
+		slotUsed[index] = false;
+		colliders[index].active = false;
+		return true;
 	}
 
-
-
-	void CollisionSystem::UpdateCollider(Collider& collider, uint8_t& index)
+	void CollisionSystem::UpdateCollider(uint8_t index, const Collider& collider)
 	{
-		if (index == 0)
+		if (index > 0 && slotUsed[index])
 		{
-			return;
+			colliders[index] = collider;
+			colliders[index].id = index;
 		}
-
-		colliders[index] = collider;
-		colliders[index].id = index;
-	}
-	void CollisionSystem::UpdateCollider(Collider& collider)
-	{
-		UpdateCollider(collider, collider.id);
-	}
-	Collider* CollisionSystem::GetCollider(uint8_t& index) const
-	{
-		return colliders[index];
 	}
 
-
-	const Collider* CollisionSystem::GetCollisions(Collider& collider, uint8_t& collisionCount) const
+	const Collider* CollisionSystem::GetCollider(uint8_t index) const
 	{
-		Collider collidersHit[collisionCount];
-		uint8_t hitIndex = 0;
-		
-		float maxX = collider.xPos + collider.xSize / 2;
-		float maxY = collider.yPos + collider.ySize / 2;
-		float minX = collider.xPos - collider.xSize / 2;
-		float minY = collider.yPos - collider.ySize / 2;
-
-		for (uint8_t i = 1; i < 256; i++)
+		if (index > 0 && slotUsed[index])
 		{
-			if (colliders[i].id == collider.id)
-			{
-				continue;
-			}
-			if ((1 << (collider.layer * 4 + colliders[i].id)) & layerMask)
+			return &colliders[index];
+		}
+		return nullptr;
+	}
+
+	void CollisionSystem::Clear()
+	{
+		for (int i = 1; i < 256; i++)
+		{
+			slotUsed[i] = false;
+			colliders[i].active = false;
+		}
+	}
+
+	std::vector<Collider> CollisionSystem::GetCollisions(const AABB& box, uint8_t mask) const
+	{
+		std::vector<Collider> hits;
+		hits.reserve(16);
+
+		for (int i = 1; i < 256; i++)
+		{
+			if (!slotUsed[i] || !colliders[i].active)
 			{
 				continue;
 			}
 
-			float colliderMaxX = collider.xPos + collider.xSize / 2;
-			float colliderMaxY = collider.yPos + collider.ySize / 2;
-			float colliderMinX = collider.xPos - collider.xSize / 2;
-			float colliderMinY = collider.yPos - collider.ySize / 2;
-
-
-			if (((colliderMinY < maxY && colliderMinY > maxY) && ((colliderMinX < maxX && colliderMinX > maxX) || (colliderMaxX < maxX && colliderMaxX > maxX))) ||
-				((colliderMaxY < maxY && colliderMaxY > maxY) && ((colliderMinX < maxX && colliderMinX > maxX) || (colliderMaxX < maxX && colliderMaxX > maxX))))
+			if (!(mask & (1 << colliders[i].layer)))
 			{
-				collidersHit[hitIndex] = colliders[i];
-				hitIndex++;
-				if (collisionCount <= hitIndex)
-				{
-					break;
-				}
-			}
-			else
-			{
-				//no hit.
 				continue;
+			}
+
+			if (box.Overlaps(colliders[i].GetBounds()))
+			{
+				hits.push_back(colliders[i]);
 			}
 		}
 
-		collisionCount = hitIndex;
-		return collidersHit;
+		return hits;
 	}
 
-	void CollisionSystem::RemoveLayerContact(uint8_t layer1, uint_t layer2)
+	bool CollisionSystem::CheckOverlap(const AABB& box, uint8_t mask) const
 	{
-		layerMask = layermask | 1 << (layer1 * 4 + layer2);
-	}
-	void CollisionSystem::AddLayerContact(uint8_t layer1, uint_t layer2)
-	{
-		layerMask = layermask & ~(1 << (layer1 * 4 + layer2));
-	}
+		for (int i = 1; i < 256; i++)
+		{
+			if (!slotUsed[i] || !colliders[i].active)
+			{
+				continue;
+			}
 
+			if (!(mask & (1 << colliders[i].layer)))
+			{
+				continue;
+			}
 
-	CollisionSystem::CollisionSystem()
-	{
-		Collider collider();
-		collider.xPos = 0;
-		collider.yPos = 0;
-		collider.xSize = 0;
-		collider.ySize = 0;
-		collider.id = 0;
-		collider.layer = 0;
-
-		instance = this;
+			if (box.Overlaps(colliders[i].GetBounds()))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 }
